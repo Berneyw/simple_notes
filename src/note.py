@@ -11,6 +11,9 @@ from time import sleep
 #     {"task": "Test3", "status": "Undone"},
 # ]
 
+# TODO: Subtasks, Description for tasks, Task prioritization (with colors, colorama and etc.)
+# Statistics about tasks, history of tasks
+
 class Note:
 
     _instance = None  # Class-level variable to store the single instance
@@ -20,32 +23,38 @@ class Note:
             cls._instance = super(Note, cls).__new__(cls)
             cls._instance.initialize()
         return cls._instance
-
+    
     def initialize(self):
         # Initialize the instance (constructor logic)
         self.list_of_tasks = []
 
     def display_list(self):
-        
         """
         This function prints all the tasks
         """
-        
         print("SimpleNotes")
         print("---------------------------")
-
+        
         for index, task_info in enumerate(self.list_of_tasks, start=1):
-            task, status, deadline = task_info["task"], task_info["status"], task_info["deadline"]
+            task, status, deadline = task_info.get("task"), task_info.get("status"), task_info.get("deadline")
 
-            if isinstance(deadline, datetime.datetime):
-                deadline_str = deadline.strftime("%H:%M")
-            else:
-                deadline_str = str(deadline)
+            if task is not None and status is not None:
+                if isinstance(deadline, datetime.datetime):
+                    deadline_str = deadline.strftime("%H:%M")
+                else:
+                    deadline_str = str(deadline)
 
-            if task_info["deadline"] == "":
-                print(f"{index}. {task} | {status}")
-            print(f"{index}. {task} | {status} | Deadline: {deadline_str}")
-
+                if task_info.get("deadline") is None:
+                    print(f"{index}. {task} | {status}")
+                else:
+                    print(f"{index}. {task} | {status} | Deadline: {deadline_str}")
+                    
+            if "subtasks" in task_info:
+                for subtask in task_info["subtasks"]:
+                    subtask_task, subtask_status = subtask.get("task"), subtask.get("status")
+                    if subtask_task is not None:
+                        print(f"  - {subtask_task}")
+                    
         print("---------------------------")
 
 
@@ -148,7 +157,36 @@ class Note:
                             notified_tasks[task_name] = True  
             # Pause between checks
             sleep(30)
-
+    
+    
+    def create_subtask(self):
+        """Subtask should have this pattern:
+        1. Task | Undone | Deadline: 17:30
+            -Subtask | Undone
+            -Subtask2 | Undone
+            -Subtask3 | Done
+        """
+        
+        # self.list_of_tasks.append
+        # ({"task": task_append_name, "status": "Undone", "deadline": deadline_date})
+        task_index = input("Enter the number of the task for which you want to add a subtask\n >> ")
+        task_index = int(task_index)
+        
+        if task_index < 1 or task_index > len(self.list_of_tasks):
+                print("Invalid task number. Task not found.")
+                return
+            
+        subtask_name = input("Enter a name for subtask\n >> ")
+        if subtask_name != None:
+        # Check if the task already has subtasks, and if not, create an empty list
+            if "subtasks" not in self.list_of_tasks[task_index - 1]:
+                self.list_of_tasks[task_index - 1]["subtasks"] = []
+            # Append the subtask to the list of subtasks within the parent task
+            self.list_of_tasks[task_index - 1]["subtasks"].append({"task": subtask_name})
+            
+            print(f"Succesfully created subtask '{subtask_name}'")
+            
+                    
 
 
 note = Note()
@@ -162,6 +200,7 @@ help_message = [
     "2: change status of task",
     "3: add new task",
     "4: delete task",
+    "5: create subtask",
 ]
 
 def main():
@@ -174,7 +213,9 @@ def main():
     while True:
         command = input("Enter what you want to do ('help' for all commands or 'q' to quit)\n >> ")
         
-        command = command.lower()
+        command = command.casefold()
+        
+        # TODO: make more efficient way to parse commands, if possible
         
         if command == "help":
             for i in help_message:
@@ -190,6 +231,8 @@ def main():
             note.append_task()
         elif command == "4" or command == "del":
             note.delete_task()
+        elif command == "5" or command == "add sub":
+            note.create_subtask()
 
 
 # note.append_task()
