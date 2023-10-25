@@ -3,6 +3,7 @@ import threading
 import notifications
 from dateutil import parser as date_parser
 from time import sleep
+from colorama import Fore
 
 
 # list_of_tasks = [
@@ -11,7 +12,7 @@ from time import sleep
 #     {"task": "Test3", "status": "Undone"},
 # ]
 
-# TODO: Subtasks, Description for tasks, Task prioritization (with colors, colorama and etc.)
+# TODO: Description for tasks, Task prioritization (with colors, colorama and etc.)
 # Statistics about tasks, history of tasks
 
 class Note:
@@ -186,6 +187,36 @@ class Note:
             
             print(f"Succesfully created subtask '{subtask_name}'")
             
+    def change_priority(self):
+        task_index = input("Enter task index\n >> ")
+        task_index = int(task_index)
+        # Current task saved in variable
+        current_task = self.list_of_tasks[task_index - 1]["task"]
+        
+        # Удалите ANSI escape-коды из текущей задачи
+        current_task = current_task.replace(Fore.RED, '').replace(Fore.MAGENTA, '').replace(Fore.YELLOW, '').replace(Fore.GREEN, '').replace(Fore.WHITE, '')
+
+        priority_value = input("Enter priority of your task\n"
+                            "1 = Red (Highest)\n"
+                            "2 = Pink (High)\n"
+                            "3 = Yellow (Medium)\n"
+                            "4 = Green (Light)\n"
+                            "5 = White (Reset priority)\n >> ")
+        priority_value = int(priority_value)
+        
+        # Changes task color 
+        match priority_value:
+            case 1:
+                self.list_of_tasks[task_index - 1]["task"] = Fore.RED + current_task + Fore.RESET
+            case 2:
+                self.list_of_tasks[task_index - 1]["task"] = Fore.MAGENTA + current_task + Fore.RESET
+            case 3:
+                self.list_of_tasks[task_index - 1]["task"] = Fore.YELLOW + current_task + Fore.RESET
+            case 4:
+                self.list_of_tasks[task_index - 1]["task"] = Fore.GREEN + current_task + Fore.RESET
+            case 5:
+                self.list_of_tasks[task_index - 1]["task"] = current_task + Fore.RESET
+
                     
 
 
@@ -201,6 +232,7 @@ help_message = [
     "3: add new task",
     "4: delete task",
     "5: create subtask",
+    "6: change priority",
 ]
 
 def main():
@@ -233,6 +265,8 @@ def main():
             note.delete_task()
         elif command == "5" or command == "add sub":
             note.create_subtask()
+        elif command == "6" or command == "priority":
+            note.change_priority()
 
 
 # note.append_task()
