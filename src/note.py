@@ -17,7 +17,7 @@ from colorama import Fore
 
 class Note:
 
-    _instance = None  # Class-level variable to store the single instance
+    _instance = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -30,14 +30,11 @@ class Note:
         self.list_of_tasks = []
 
     def display_list(self):
-        """
-        This function prints all the tasks
-        """
         print("SimpleNotes")
         print("---------------------------")
-        
+
         for index, task_info in enumerate(self.list_of_tasks, start=1):
-            task, status, deadline = task_info.get("task"), task_info.get("status"), task_info.get("deadline")
+            task, status, deadline, description = task_info.get("task"), task_info.get("status"), task_info.get("deadline"), task_info.get("description")
 
             if task is not None and status is not None:
                 if isinstance(deadline, datetime.datetime):
@@ -45,19 +42,22 @@ class Note:
                 else:
                     deadline_str = str(deadline)
 
-                if task_info.get("deadline") is None:
-                    print(f"{index}. {task} | {status}")
+                if description:
+                    task_string = f"{index}. {task} | {status} | Deadline: {deadline_str} | *"
                 else:
-                    print(f"{index}. {task} | {status} | Deadline: {deadline_str}")
-                    
+                    task_string = f"{index}. {task} | {status} | Deadline: {deadline_str}"
+
+                print(task_string)
+
             if "subtasks" in task_info:
                 for subtask in task_info["subtasks"]:
                     subtask_task, subtask_status = subtask.get("task"), subtask.get("status")
                     if subtask_task is not None:
                         print(f"  - {subtask_task}")
+
+                        
                     
         print("---------------------------")
-
 
     def change_status(self):
         
@@ -98,6 +98,10 @@ class Note:
                 
     def append_task(self):
         task_append_name = input("Enter name of a task\n >> ")
+        
+        if len(task_append_name) == 0 or len(task_append_name) > 70:
+            print("Task name must be between 1 and 70 characters")
+        
         task_deadline = input("Enter task deadline (e.g., '14 October' or '15:00' or 'October 15')\n >> ")
 
         deadline_date = self.parse_deadline(task_deadline)
@@ -159,7 +163,6 @@ class Note:
             # Pause between checks
             sleep(30)
     
-    
     def create_subtask(self):
         """Subtask should have this pattern:
         1. Task | Undone | Deadline: 17:30
@@ -216,9 +219,19 @@ class Note:
                 self.list_of_tasks[task_index - 1]["task"] = Fore.GREEN + current_task + Fore.RESET
             case 5:
                 self.list_of_tasks[task_index - 1]["task"] = current_task + Fore.RESET
-
-                    
-
+                
+    def make_description(self):
+        task_index = input("Enter task index\n >> ")
+        task_index = int(task_index)
+        
+        task_description = input("Enter task description\n >> ")
+        self.list_of_tasks[task_index - 1]["description"] = task_description
+        
+    def read_description(self):
+        task_index = input("Enter task index\n >> ")
+        task_index = int(task_index)
+        
+        print(f"\nDescription: {self.list_of_tasks[task_index - 1]['description']}\n")
 
 note = Note()
 
@@ -233,6 +246,8 @@ help_message = [
     "4: delete task",
     "5: create subtask",
     "6: change priority",
+    "7: add description",
+    "8: read description",
 ]
 
 def main():
@@ -240,7 +255,6 @@ def main():
     deadline_thread = threading.Thread(target=Note.check_deadlines)
     deadline_thread.daemon = True
     deadline_thread.start()
-    
     
     while True:
         command = input("Enter what you want to do ('help' for all commands or 'q' to quit)\n >> ")
@@ -267,9 +281,14 @@ def main():
             note.create_subtask()
         elif command == "6" or command == "priority":
             note.change_priority()
+        elif command == "7" or command == "description":
+            note.make_description()
+        elif command == "8" or command == "read description":
+            note.read_description()
+        else:
+            print("Incorrect command, enter \"help\" for list of available commands\n"
+                  "Or enter \"q\" to exit terminal")
 
-
-# note.append_task()
 
 if __name__ == "__main__":
     main()
