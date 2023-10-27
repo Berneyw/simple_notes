@@ -12,8 +12,7 @@ from colorama import Fore
 #     {"task": "Test3", "status": "Undone"},
 # ]
 
-# TODO: Description for tasks, Task prioritization (with colors, colorama and etc.)
-# Statistics about tasks, history of tasks
+# TODO: Statistics about tasks, history of tasks
 
 class Note:
 
@@ -130,9 +129,15 @@ class Note:
     
     @staticmethod
     def parse_deadline(deadline_str):
-        
         """
-        Supports many user input for deadline, like 15 October, 15:00 and etc.
+        Parses a string representation of a deadline date and time.
+
+        Parameters:
+            deadline_str (str): The string representation of the deadline date and time.
+
+        Returns:
+            datetime.datetime or None: The parsed deadline date and time
+            if successful, None otherwise.
         """
         
         try:
@@ -258,36 +263,55 @@ def main():
     
     while True:
         command = input("Enter what you want to do ('help' for all commands or 'q' to quit)\n >> ")
-        
         command = command.casefold()
         
         # TODO: make more efficient way to parse commands, if possible
-        
+    
         if command == "help":
             for i in help_message:
                 print(i)
-                
         elif command == "q":
             break
-        elif command == "1" or command == "list" or command == "show":
+        elif command == "1" or check_command_in_file(command, "simple_notes/commands/list.txt"):
             note.display_list()
-        elif command == "2" or command == "change":
+        elif command == "2" or check_command_in_file(command, "simple_notes/commands/status.txt"):
             note.change_status()
-        elif command == "3" or command == "add":
+        elif command == "3" or check_command_in_file(command, "simple_notes/commands/append.txt"):
             note.append_task()
-        elif command == "4" or command == "del":
+        elif command == "4" or check_command_in_file(command, "simple_notes/commands/delete.txt"):
             note.delete_task()
-        elif command == "5" or command == "add sub":
+        elif command == "5" or check_command_in_file(command, "simple_notes/commands/subtask.txt"):
             note.create_subtask()
-        elif command == "6" or command == "priority":
+        elif command == "6" or check_command_in_file(command, "simple_notes/commands/priority.txt"):
             note.change_priority()
-        elif command == "7" or command == "description":
+        elif command == "7" or check_command_in_file(command, "simple_notes/commands/description.txt"):
             note.make_description()
-        elif command == "8" or command == "read description":
+        elif command == "8" or check_command_in_file(command, "simple_notes/commands/read_description.txt"):
             note.read_description()
         else:
-            print("Incorrect command, enter \"help\" for list of available commands\n"
-                  "Or enter \"q\" to exit terminal")
+            print("Incorrect command, enter \"help\" for a list of available commands\n"
+                        "Or enter \"q\" to exit terminal")
+
+def check_command_in_file(command, file_name):
+
+    """
+    Check if a given command exists in a specified file.
+
+    Args:
+        command (str): The command to search for.
+        file_name (str): The name of the file to search in.
+
+    Returns:
+        bool: True if the command is found in the file, False otherwise.
+        
+    """
+
+    try:
+        with open(file_name, 'r') as file:
+            file_contents = file.read()
+            return command in file_contents
+    except FileNotFoundError:
+        return False
 
 
 if __name__ == "__main__":
