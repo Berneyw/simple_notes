@@ -1,0 +1,31 @@
+delete task
+deletetask
+delete
+del
+remove
+remove task
+removetask
+delete todo
+deletetodo
+removetodo
+remove todo
+erase task
+eliminate task
+clear task
+purge task
+dispose of task
+wipe task
+expunge task
+scrub task
+abolish task
+terminate task
+erase todo
+eliminate todo
+clear todo
+purge todo
+dispose of todo
+wipe todo
+expunge todo
+scrub todo
+abolish todo
+terminate todo

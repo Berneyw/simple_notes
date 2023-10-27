@@ -1,0 +1,11 @@
+changestatus
+change status
+status
+undone
+done
+makedone
+makeundone
+changedone
+changeundone
+change done
+change undone
