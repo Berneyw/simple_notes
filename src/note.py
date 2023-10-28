@@ -90,6 +90,15 @@ class Note:
         match new_status:
             case "1":
                 self.list_of_tasks[number_of_task]["status"] = "Done"
+                print("Successfully changed status to Done")
+                ask_to_delete = input("Do you want to delete this task? (Y/N)\n >> ")
+                ask_to_delete = ask_to_delete.casefold()
+                
+                if ask_to_delete in ["yes", "y", "yeah", "of course", "certainly", "ye"]:
+                    self.list_of_tasks.pop(number_of_task)
+                    print("\nSuccessfully deleted task"
+                          f" '{self.list_of_tasks[number_of_task]['task']}'\n")
+                
             case "2":
                 self.list_of_tasks[number_of_task]["status"] = "Undone"
             case _:
@@ -127,8 +136,8 @@ class Note:
         except ValueError:
             print("Invalid input. Please enter a valid task number.")
     
-    @staticmethod
-    def parse_deadline(deadline_str):
+    @classmethod
+    def parse_deadline(cls, deadline_str):
         """
         Parses a string representation of a deadline date and time.
 
@@ -237,6 +246,31 @@ class Note:
         task_index = int(task_index)
         
         print(f"\nDescription: {self.list_of_tasks[task_index - 1]['description']}\n")
+        
+    def statistics_about_tasks(self):
+        
+        # TODO: Tasks/week, Tasks/month, Most active days
+        # Tasks per week/month patter:
+        # Tasks done per week:
+        # -taskname1
+        # -taskname2
+        # ...
+        # This should be seen from user command, maybe handle user input if
+        # user calls this function and ask him, if he wants to see other statistics
+        # like tasks/week/month and etc.
+        
+        done_tasks = 0
+        done_tasks_names = []
+        tasks_per_week = []
+
+        for task in self.list_of_tasks:
+            if task["status"] == "Done":
+                done_tasks += 1
+                done_tasks_names.append(task["task"])
+        print(f"Tasks done: {done_tasks}\n")
+
+        for tasks in done_tasks_names:
+            print(f"- {tasks}")
 
 note = Note()
 
@@ -253,6 +287,7 @@ help_message = [
     "6: change priority",
     "7: add description",
     "8: read description",
+    "9: statistics about tasks",
 ]
 
 def main():
@@ -272,28 +307,29 @@ def main():
                 print(i)
         elif command == "q":
             break
-        elif command == "1" or check_command_in_file(command, "simple_notes/commands/list.txt"):
+        elif command == "1" or check_command_in_file(command, "commands/list.txt"):
             note.display_list()
-        elif command == "2" or check_command_in_file(command, "simple_notes/commands/status.txt"):
+        elif command == "2" or check_command_in_file(command, "commands/status.txt"):
             note.change_status()
-        elif command == "3" or check_command_in_file(command, "simple_notes/commands/append.txt"):
+        elif command == "3" or check_command_in_file(command, "commands/append.txt"):
             note.append_task()
-        elif command == "4" or check_command_in_file(command, "simple_notes/commands/delete.txt"):
+        elif command == "4" or check_command_in_file(command, "commands/delete.txt"):
             note.delete_task()
-        elif command == "5" or check_command_in_file(command, "simple_notes/commands/subtask.txt"):
+        elif command == "5" or check_command_in_file(command, "commands/subtask.txt"):
             note.create_subtask()
-        elif command == "6" or check_command_in_file(command, "simple_notes/commands/priority.txt"):
+        elif command == "6" or check_command_in_file(command, "commands/priority.txt"):
             note.change_priority()
-        elif command == "7" or check_command_in_file(command, "simple_notes/commands/description.txt"):
+        elif command == "7" or check_command_in_file(command, "commands/description.txt"):
             note.make_description()
-        elif command == "8" or check_command_in_file(command, "simple_notes/commands/read_description.txt"):
+        elif command == "8" or check_command_in_file(command, "commands/read_description.txt"):
             note.read_description()
+        elif command == "9" or check_command_in_file(command, "commands/statistics.txt"):
+            note.statistics_about_tasks()
         else:
             print("Incorrect command, enter \"help\" for a list of available commands\n"
                         "Or enter \"q\" to exit terminal")
 
 def check_command_in_file(command, file_name):
-
     """
     Check if a given command exists in a specified file.
 
@@ -307,7 +343,7 @@ def check_command_in_file(command, file_name):
     """
 
     try:
-        with open(file_name, 'r') as file:
+        with open(file_name, 'r', encoding="utf-8") as file:
             file_contents = file.read()
             return command in file_contents
     except FileNotFoundError:
