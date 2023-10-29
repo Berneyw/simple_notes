@@ -1,10 +1,10 @@
 import datetime
 import threading
 import notifications
+import csv
 from dateutil import parser as date_parser
 from time import sleep
 from colorama import Fore
-
 
 # list_of_tasks = [
 #     {"task": "Test1", "status": "Undone"},
@@ -27,7 +27,26 @@ class Note:
     def initialize(self):
         # Initialize the instance (constructor logic)
         self.list_of_tasks = []
-
+    def save_tasks_to_csv(self, filename):
+        with open(filename, 'w', newline='') as file:
+            fieldnames = ['task', 'status', 'deadline', 'description']  # Замените на свои поля
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(self.list_of_tasks)
+            
+    @classmethod
+    def load_tasks_from_csv(cls, filename):
+        try:
+            with open(filename, 'r', newline='') as file:
+                reader = csv.DictReader(file)
+                tasks = list(reader)
+                for task in tasks:
+                    if "deadline" in task:
+                        task["deadline"] = date_parser.isoparse(task["deadline"])
+                return tasks
+        except FileNotFoundError:
+            return []
+        
     def display_list(self):
         print("SimpleNotes")
         print("---------------------------")
@@ -37,7 +56,11 @@ class Note:
 
             if task is not None and status is not None:
                 if isinstance(deadline, datetime.datetime):
-                    deadline_str = deadline.strftime("%H:%M")
+                    if deadline.time() == datetime.time(0, 0):
+                        # Display only the date if the time is midnight
+                        deadline_str = deadline.strftime("%d %B")
+                    else:
+                        deadline_str = deadline.strftime("%d %B %H:%M")
                 else:
                     deadline_str = str(deadline)
 
@@ -54,8 +77,6 @@ class Note:
                     if subtask_task is not None:
                         print(f"  - {subtask_task}")
 
-                        
-                    
         print("---------------------------")
 
     def change_status(self):
@@ -106,18 +127,23 @@ class Note:
                 
     def append_task(self):
         task_append_name = input("Enter name of a task\n >> ")
-        
+
         if len(task_append_name) == 0 or len(task_append_name) > 70:
             print("Task name must be between 1 and 70 characters")
-        
+            return
+
         task_deadline = input("Enter task deadline (e.g., '14 October' or '15:00' or 'October 15')\n >> ")
 
-        deadline_date = self.parse_deadline(task_deadline)
-        
+        # Check if the user has provided a specific time (e.g., '15:00') in the input
+        if ':' in task_deadline:
+            deadline_date = self.parse_deadline(task_deadline)
+        else:
+            # If no time is specified, set the time to 23:59 (11:59 PM)
+            deadline_date = self.parse_deadline(f"{task_deadline} 23:59")
+
         if deadline_date is not None:
             self.list_of_tasks.append({"task": task_append_name, "status": "Undone", "deadline": deadline_date})
             print(f"Successfully added task with name: {task_append_name}")
-
     
     def delete_task(self):
         task_delete_index = input("Enter number of task to delete\n >> ")
@@ -138,24 +164,14 @@ class Note:
     
     @classmethod
     def parse_deadline(cls, deadline_str):
-        """
-        Parses a string representation of a deadline date and time.
-
-        Parameters:
-            deadline_str (str): The string representation of the deadline date and time.
-
-        Returns:
-            datetime.datetime or None: The parsed deadline date and time
-            if successful, None otherwise.
-        """
-        
         try:
-            deadline_date = date_parser.parse(deadline_str)
+            # Attempt to parse the input using dateutil.parser
+            deadline_date = date_parser.parse(deadline_str, dayfirst=True, yearfirst=False)
             return deadline_date
         except ValueError:
-            print("Invalid deadline format. Please use a valid date and time format.")
+            print("Invalid deadline format. Please use a valid date and time format (e.g., '15 October' or '15:00').")
             return None
-        
+
     @staticmethod
     def check_deadlines():  
         """  
@@ -184,7 +200,6 @@ class Note:
             -Subtask2 | Undone
             -Subtask3 | Done
         """
-        
         # self.list_of_tasks.append
         # ({"task": task_append_name, "status": "Undone", "deadline": deadline_date})
         task_index = input("Enter the number of the task for which you want to add a subtask\n >> ")
@@ -210,7 +225,6 @@ class Note:
         # Current task saved in variable
         current_task = self.list_of_tasks[task_index - 1]["task"]
         
-        # Удалите ANSI escape-коды из текущей задачи
         current_task = current_task.replace(Fore.RED, '').replace(Fore.MAGENTA, '').replace(Fore.YELLOW, '').replace(Fore.GREEN, '').replace(Fore.WHITE, '')
 
         priority_value = input("Enter priority of your task\n"
@@ -292,6 +306,9 @@ help_message = [
 
 def main():
     
+    tasks = Note.load_tasks_from_csv("tasks.csv")
+    note.list_of_tasks = tasks
+    
     deadline_thread = threading.Thread(target=Note.check_deadlines)
     deadline_thread.daemon = True
     deadline_thread.start()
@@ -306,24 +323,25 @@ def main():
             for i in help_message:
                 print(i)
         elif command == "q":
+            note.save_tasks_to_csv("tasks.csv")
             break
-        elif command == "1" or check_command_in_file(command, "commands/list.txt"):
+        elif command == "1" or check_command_in_file(command, r"D:\Code\simple_notes\commands\list.txt"):
             note.display_list()
-        elif command == "2" or check_command_in_file(command, "commands/status.txt"):
+        elif command == "2" or check_command_in_file(command, r"D:\Code\simple_notes\commands\status.txt"):
             note.change_status()
-        elif command == "3" or check_command_in_file(command, "commands/append.txt"):
+        elif command == "3" or check_command_in_file(command, r"D:\Code\simple_notes\commands\append.txt"):
             note.append_task()
-        elif command == "4" or check_command_in_file(command, "commands/delete.txt"):
+        elif command == "4" or check_command_in_file(command, r"D:\Code\simple_notes\commands\delete.txt"):
             note.delete_task()
-        elif command == "5" or check_command_in_file(command, "commands/subtask.txt"):
+        elif command == "5" or check_command_in_file(command, r"D:\Code\simple_notes\commands\subtask.txt"):
             note.create_subtask()
-        elif command == "6" or check_command_in_file(command, "commands/priority.txt"):
+        elif command == "6" or check_command_in_file(command, r"D:\Code\simple_notes\commands\priority.txt"):
             note.change_priority()
-        elif command == "7" or check_command_in_file(command, "commands/description.txt"):
+        elif command == "7" or check_command_in_file(command, r"D:\Code\simple_notes\commands\description.txt"):
             note.make_description()
-        elif command == "8" or check_command_in_file(command, "commands/read_description.txt"):
+        elif command == "8" or check_command_in_file(command, r"D:\Code\simple_notes\commands\read_description.txt"):
             note.read_description()
-        elif command == "9" or check_command_in_file(command, "commands/statistics.txt"):
+        elif command == "9" or check_command_in_file(command, r"D:\Code\simple_notes\commands\statistics.txt"):
             note.statistics_about_tasks()
         else:
             print("Incorrect command, enter \"help\" for a list of available commands\n"
@@ -352,4 +370,3 @@ def check_command_in_file(command, file_name):
 
 if __name__ == "__main__":
     main()
-
