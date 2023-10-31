@@ -7,4 +7,5 @@ def send_notification_deadline(task_name):
         message=f"Deadline for task '{task_name}' has ended.",
         timeout=5,
         ticker="Deadline ended",
+        app_icon="simple_notes/images/simpleNotesLogo2.ico",
     )
