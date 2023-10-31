@@ -2,6 +2,7 @@ import datetime
 import threading
 import notifications
 import csv
+from os import path, getcwd
 from dateutil import parser as date_parser
 from time import sleep
 from colorama import Fore
@@ -304,6 +305,21 @@ help_message = [
     "9: statistics about tasks",
 ]
 
+# path from OS module
+base_dir = path.dirname(path.abspath(__file__))
+commands_dir = path.join(base_dir, "..", "commands")
+
+list_file = path.join(base_dir, commands_dir, "list.txt")
+status_file = path.join(base_dir, commands_dir, "status.txt")
+append_file = path.join(base_dir, commands_dir, "append.txt")
+delete_file = path.join(base_dir, commands_dir, "delete.txt")
+subtask_file = path.join(base_dir, commands_dir, "subtask.txt")
+priority_file = path.join(base_dir, commands_dir, "priority.txt")
+description_file = path.join(base_dir, commands_dir, "description.txt")
+read_description_file = path.join(base_dir, commands_dir, "read_description.txt")
+statistics_file = path.join(base_dir, commands_dir, "statistics.txt")
+
+
 def main():
     
     tasks = Note.load_tasks_from_csv("tasks.csv")
@@ -325,23 +341,23 @@ def main():
         elif command == "q":
             note.save_tasks_to_csv("tasks.csv")
             break
-        elif command == "1" or check_command_in_file(command, r"D:\Code\simple_notes\commands\list.txt"):
+        elif command == "1" or check_command_in_file(command, list_file):
             note.display_list()
-        elif command == "2" or check_command_in_file(command, r"D:\Code\simple_notes\commands\status.txt"):
+        elif command == "2" or check_command_in_file(command, status_file):
             note.change_status()
-        elif command == "3" or check_command_in_file(command, r"D:\Code\simple_notes\commands\append.txt"):
+        elif command == "3" or check_command_in_file(command, append_file):
             note.append_task()
-        elif command == "4" or check_command_in_file(command, r"D:\Code\simple_notes\commands\delete.txt"):
+        elif command == "4" or check_command_in_file(command, delete_file):
             note.delete_task()
-        elif command == "5" or check_command_in_file(command, r"D:\Code\simple_notes\commands\subtask.txt"):
+        elif command == "5" or check_command_in_file(command, subtask_file):
             note.create_subtask()
-        elif command == "6" or check_command_in_file(command, r"D:\Code\simple_notes\commands\priority.txt"):
+        elif command == "6" or check_command_in_file(command, priority_file):
             note.change_priority()
-        elif command == "7" or check_command_in_file(command, r"D:\Code\simple_notes\commands\description.txt"):
+        elif command == "7" or check_command_in_file(command, description_file):
             note.make_description()
-        elif command == "8" or check_command_in_file(command, r"D:\Code\simple_notes\commands\read_description.txt"):
+        elif command == "8" or check_command_in_file(command, read_description_file):
             note.read_description()
-        elif command == "9" or check_command_in_file(command, r"D:\Code\simple_notes\commands\statistics.txt"):
+        elif command == "9" or check_command_in_file(command, statistics_file):
             note.statistics_about_tasks()
         else:
             print("Incorrect command, enter \"help\" for a list of available commands\n"
@@ -359,7 +375,7 @@ def check_command_in_file(command, file_name):
         bool: True if the command is found in the file, False otherwise.
         
     """
-
+    
     try:
         with open(file_name, 'r', encoding="utf-8") as file:
             file_contents = file.read()
