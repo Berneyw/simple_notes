@@ -2,7 +2,7 @@ import datetime
 import threading
 import notifications
 import csv
-from os import path, getcwd
+from os import path
 from dateutil import parser as date_parser
 from time import sleep
 from colorama import Fore
@@ -36,6 +36,7 @@ class Note:
                 "status",
                 "deadline",
                 "description",
+                "subtasks",
             ]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
@@ -88,12 +89,28 @@ class Note:
                 print(task_string)
 
             if "subtasks" in task_info:
+                subtask_list = []
                 for subtask in task_info["subtasks"]:
-                    subtask_task, subtask_status = subtask.get("task"), subtask.get(
-                        "status"
+                    if isinstance(subtask, dict):
+                        subtask_task = subtask.get("task")
+                        if subtask_task is not None:
+                            subtask_list.append(subtask_task)
+                    elif isinstance(subtask, str):
+                        subtask_list.append(subtask)
+
+                if subtask_list:
+                    subtask_string = "".join(subtask_list)
+                    # Remove brackets and quotes
+                    subtask_string = (
+                        subtask_string.replace("[", "")
+                        .replace("]", "")
+                        .replace("'", "")
+                        .replace("{", "")
+                        .replace("}", "")
+                        .replace("task", "")
+                        .replace("  ", " ")
                     )
-                    if subtask_task is not None:
-                        print(f"  - {subtask_task}")
+                    print(f"  - Subtasks{subtask_string}")
 
         print("---------------------------")
 
@@ -156,7 +173,7 @@ class Note:
 
         if len(task_append_name) == 0 or len(task_append_name) > 70:
             print("Task name must be between 1 and 70 characters")
-            return
+            return None
 
         task_deadline = input(
             "Enter task deadline (e.g., '14 October' or '15:00' or 'October 15')\n >> "
@@ -187,7 +204,7 @@ class Note:
 
             if task_delete_index < 1 or task_delete_index > len(self.list_of_tasks):
                 print("Invalid task number. Task not found.")
-                return
+                return None
 
             # Subtract 1 from task_delete_index to match the list indexing (starting from 0)
             deleted_task = self.list_of_tasks.pop(task_delete_index - 1)
@@ -250,10 +267,10 @@ class Note:
 
         if task_index < 1 or task_index > len(self.list_of_tasks):
             print("Invalid task number. Task not found.")
-            return
+            return None
 
         subtask_name = input("Enter a name for subtask\n >> ")
-        if subtask_name != None:
+        if subtask_name is not None:
             # Check if the task already has subtasks, and if not, create an empty list
             if "subtasks" not in self.list_of_tasks[task_index - 1]:
                 self.list_of_tasks[task_index - 1]["subtasks"] = []
@@ -335,7 +352,7 @@ class Note:
 
         done_tasks = 0
         done_tasks_names = []
-        tasks_per_week = []
+        # tasks_per_week = []
 
         for task in self.list_of_tasks:
             if task["status"] == "Done":
@@ -349,13 +366,15 @@ class Note:
 
 note = Note()
 
-note.list_of_tasks.append(
-    {"task": "Test1", "status": "Undone", "deadline": "14 October"}
-)
-note.list_of_tasks.append({"task": "Test2", "status": "Done", "deadline": "14 October"})
-note.list_of_tasks.append(
-    {"task": "Test3", "status": "Undone", "deadline": "14 October"}
-)
+# note.list_of_tasks.append(
+#     {"task": "Test1", "status": "Undone", "deadline": "14 October"}
+# )
+# note.list_of_tasks.append(
+#     {"task": "Test2", "status": "Done", "deadline": "14 October"}
+# )
+# note.list_of_tasks.append(
+#     {"task": "Test3", "status": "Undone", "deadline": "14 October"}
+# )
 
 help_message = [
     "1: show TODO list",
