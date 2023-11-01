@@ -7,6 +7,8 @@ from dateutil import parser as date_parser
 from time import sleep
 from colorama import Fore
 
+# Used Black for formatting
+
 # list_of_tasks = [
 #     {"task": "Test1", "status": "Undone"},
 #     {"task": "Test2", "status": "Done"},
@@ -30,6 +32,12 @@ class Note:
         self.list_of_tasks = []
 
     def save_tasks_to_csv(self, filename):
+        """
+        Save tasks to a CSV file.
+
+        Parameters:
+            filename (str): The name of the CSV file to save the tasks to.
+        """
         with open(filename, "w", newline="") as file:
             fieldnames = [
                 "task",
@@ -44,6 +52,14 @@ class Note:
 
     @classmethod
     def load_tasks_from_csv(cls, filename):
+        """Load tasks from a CSV file
+
+        Args:
+            filename (str): The name of the CSV file to load
+
+        Returns:
+            list: list of tasks from CSV file
+        """
         try:
             with open(filename, "r", newline="") as file:
                 reader = csv.DictReader(file)
@@ -56,6 +72,17 @@ class Note:
             return []
 
     def display_list(self):
+        """
+        Display the list of tasks.
+
+        This function prints the list of tasks along with their details.
+        It iterates over the list of tasks and prints each task along with
+        its status, deadline, and description (if available). If a task has subtasks,
+        it prints them as well.
+
+        Return:
+        - None
+        """
         print("SimpleNotes")
         print("---------------------------")
 
@@ -116,11 +143,11 @@ class Note:
 
     def change_status(self):
         """
-        This function changes the status of tasks between Done | Undone
-        checks if user input is a valid number of the actual task and then
-        changes its status depending on user input
-        """
+        Changes the status (Done/Undone) of a task based on the user's input.
 
+        Returns:
+            None
+        """
         number_of_task = input("Enter a number of task: ")
 
         try:
@@ -128,14 +155,14 @@ class Note:
 
             if number_of_task < 0 or number_of_task >= len(self.list_of_tasks):
                 print("Task not found")
-                return
+                return None
 
         except ValueError:
             print("\nEnter a valid task!\n")
-            return
+            return None
         except TypeError:
             print("\nEnter a valid task!\n")
-            return
+            return None
 
         print("What status to change to?\n")
         print("1 = Done")
@@ -169,6 +196,13 @@ class Note:
                 print("Incorrect status! Enter 1 or 2")
 
     def append_task(self):
+        """
+        Prompts the user to enter a task name and deadline,
+        and appends the task to the list of tasks.
+
+        Returns:
+            None.
+        """
         task_append_name = input("Enter name of a task\n >> ")
 
         if len(task_append_name) == 0 or len(task_append_name) > 70:
@@ -197,6 +231,14 @@ class Note:
             print(f"Successfully added task with name: {task_append_name}")
 
     def delete_task(self):
+        """
+        Deletes a task from the list of tasks.
+
+        Returns:
+            None: If the task number is invalid or the task is not found.
+            str: The deleted task.
+        """
+
         task_delete_index = input("Enter number of task to delete\n >> ")
 
         try:
@@ -215,6 +257,19 @@ class Note:
 
     @classmethod
     def parse_deadline(cls, deadline_str):
+        """
+        Parses a string representation of a deadline date and time into a valid datetime object.
+
+        Args:
+            deadline_str (str): A string representing the deadline date and time.
+
+        Returns:
+            datetime.datetime or None: A datetime object representing
+            the parsed deadline date and time.
+
+        Raises:
+            ValueError: If the input string cannot be parsed into a datetime object.
+        """
         try:
             # Attempt to parse the input using dateutil.parser
             deadline_date = date_parser.parse(
@@ -230,8 +285,17 @@ class Note:
     @staticmethod
     def check_deadlines():
         """
-        This function checks if current datetime equals to task deadline
-        and sends notification that deadline ended if it is.
+        Checks the deadlines of tasks and sends notifications if a task's deadline has passed.
+
+        This function iterates through the list of tasks stored in
+        `note.list_of_tasks` and checks if each task's deadline has passed.
+        If a task's deadline has passed and its status is "Undone", a notification
+        is sent using the `notifications.send_notification_deadline` function.
+        The function keeps track of tasks that have already been notified using
+        the `notified_tasks` dictionary.
+
+        Returns:
+            None
         """
         notified_tasks = {}
         while True:
@@ -240,26 +304,22 @@ class Note:
                 if (
                     isinstance(task_info["deadline"], datetime.datetime)
                     and task_info["status"] == "Undone"
+                    and current_time >= task_info["deadline"]
+                    and task_info["task"] not in notified_tasks
                 ):
-                    if current_time >= task_info["deadline"]:
-                        task_name = task_info["task"]
-                        if task_name not in notified_tasks:
-                            # Sends notification
-                            notifications.send_notification_deadline(task_name)
-                            # Checks if notification sent
-                            notified_tasks[task_name] = True
-            # Pause between checks
+                    task_name = task_info["task"]
+                    notifications.send_notification_deadline(task_name)
+                    notified_tasks[task_name] = True
+                    # Pause between checks
             sleep(30)
 
     def create_subtask(self):
-        """Subtask should have this pattern:
-        1. Task | Undone | Deadline: 17:30
-            -Subtask | Undone
-            -Subtask2 | Undone
-            -Subtask3 | Done
         """
-        # self.list_of_tasks.append
-        # ({"task": task_append_name, "status": "Undone", "deadline": deadline_date})
+        Creates a subtask for a task in the list of tasks.
+
+        Returns:
+            None
+        """
         task_index = input(
             "Enter the number of the task for which you want to add a subtask\n >> "
         )
@@ -282,6 +342,13 @@ class Note:
             print(f"Succesfully created subtask '{subtask_name}'")
 
     def change_priority(self):
+        """
+        Changes the priority (actually color with colorama.FORE)
+        of a task based on the user's input.
+
+        Returns:
+            None
+        """
         task_index = input("Enter task index\n >> ")
         task_index = int(task_index)
         # Current task saved in variable
@@ -327,6 +394,14 @@ class Note:
                 self.list_of_tasks[task_index - 1]["task"] = current_task + Fore.RESET
 
     def make_description(self):
+        """
+        Prompts the user to enter a task index and a task description.
+        Updates the 'description' field of the task at the given
+        index in the 'list_of_tasks' list.
+
+        Returns:
+            None
+        """
         task_index = input("Enter task index\n >> ")
         task_index = int(task_index)
 
@@ -334,6 +409,12 @@ class Note:
         self.list_of_tasks[task_index - 1]["description"] = task_description
 
     def read_description(self):
+        """
+        Reads the description of a task based on the user's input.
+
+        Returns:
+            None
+        """
         task_index = input("Enter task index\n >> ")
         task_index = int(task_index)
 
@@ -407,6 +488,7 @@ def main():
     tasks = Note.load_tasks_from_csv("tasks.csv")
     note.list_of_tasks = tasks
 
+    # Start thread to check if task deadline passed with "check_deadlines" function
     deadline_thread = threading.Thread(target=Note.check_deadlines)
     deadline_thread.daemon = True
     deadline_thread.start()
@@ -454,7 +536,7 @@ def check_command_in_file(command, file_name):
     """
     Check if a given command exists in a specified file.
 
-    Args:
+    Parameters:
         command (str): The command to search for.
         file_name (str): The name of the file to search in.
 
@@ -462,7 +544,6 @@ def check_command_in_file(command, file_name):
         bool: True if the command is found in the file, False otherwise.
 
     """
-
     try:
         with open(file_name, "r", encoding="utf-8") as file:
             file_contents = file.read()
