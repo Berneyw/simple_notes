@@ -18,6 +18,14 @@ from colorama import Fore
 # TODO: Statistics about tasks, history of tasks
 
 
+# TODO: Better cancel input handling
+
+def cancel_function(user_input):
+    if isinstance(user_input, int):
+        user_input = int(user_input)
+    elif isinstance(user_input, str) and user_input.casefold() == "cancel":
+        return 1
+
 class Note:
     _instance = None
 
@@ -149,6 +157,9 @@ class Note:
             None
         """
         number_of_task = input("Enter a number of task: ")
+        
+        if isinstance(number_of_task, str) and number_of_task.casefold() == "cancel":
+            return None
 
         try:
             number_of_task = int(number_of_task) - 1
@@ -205,6 +216,9 @@ class Note:
         """
         task_append_name = input("Enter name of a task\n >> ")
 
+        if isinstance(task_append_name, str) and task_append_name.casefold() == "cancel":
+            return None
+
         if len(task_append_name) == 0 or len(task_append_name) > 70:
             print("Task name must be between 1 and 70 characters")
             return None
@@ -212,6 +226,9 @@ class Note:
         task_deadline = input(
             "Enter task deadline (e.g., '14 October' or '15:00' or 'October 15')\n >> "
         )
+        
+        if isinstance(task_deadline, str) and task_deadline.casefold() == "cancel":
+            return None
 
         # Check if the user has provided a specific time (e.g., '15:00') in the input
         if ":" in task_deadline:
@@ -240,6 +257,9 @@ class Note:
         """
 
         task_delete_index = input("Enter number of task to delete\n >> ")
+
+        if isinstance(task_delete_index, str) and task_delete_index.casefold() == "cancel":
+            return None
 
         try:
             task_delete_index = int(task_delete_index)
@@ -323,8 +343,15 @@ class Note:
         task_index = input(
             "Enter the number of the task for which you want to add a subtask\n >> "
         )
-        task_index = int(task_index)
-
+        
+        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+            return None
+        
+        try:
+            task_index = int(task_index)
+        except ValueError:
+            print("Invalid input. Please enter a valid task number.")
+        
         if task_index < 1 or task_index > len(self.list_of_tasks):
             print("Invalid task number. Task not found.")
             return None
@@ -350,7 +377,14 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        task_index = int(task_index)
+        try:
+            task_index = int(task_index)
+        except ValueError:
+            print("Invalid input. Please enter a valid task number.")
+            
+        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+            return None
+
         # Current task saved in variable
         current_task = self.list_of_tasks[task_index - 1]["task"]
 
@@ -403,9 +437,19 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        task_index = int(task_index)
+        try:
+            task_index = int(task_index)
+        except ValueError:
+            print("Invalid input. Please enter a valid task number.")
+            
+        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+            return None
 
         task_description = input("Enter task description\n >> ")
+        
+        if task_description.casefold() is None or task_description.casefold() == "cancel":
+            return None
+        
         self.list_of_tasks[task_index - 1]["description"] = task_description
 
     def read_description(self):
@@ -416,7 +460,14 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        task_index = int(task_index)
+        
+        try:
+            task_index = int(task_index)
+        except ValueError:
+            print("Invalid input. Please enter a valid task number.")
+            
+        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+            return None
 
         print(f"\nDescription: {self.list_of_tasks[task_index - 1]['description']}\n")
 
