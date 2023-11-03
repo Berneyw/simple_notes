@@ -1,4 +1,3 @@
-import note
 from plyer import notification
 
 def send_notification_deadline(task_name):
