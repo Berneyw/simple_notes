@@ -2,6 +2,7 @@ import datetime
 import threading
 import notifications
 import csv
+import ast
 from os import path
 from dateutil import parser as date_parser
 from time import sleep
@@ -21,10 +22,11 @@ from colorama import Fore
 # TODO: Better cancel input handling
 
 def cancel_function(user_input):
-    if isinstance(user_input, int):
-        user_input = int(user_input)
-    elif isinstance(user_input, str) and user_input.casefold() == "cancel":
-        return 1
+    try:
+        user_input = int(user_input) - 1
+    except ValueError:
+        if isinstance(user_input, str) and user_input.casefold() == "cancel":
+            return 1
 
 class Note:
     _instance = None
@@ -51,13 +53,13 @@ class Note:
                 "task",
                 "status",
                 "deadline",
-                "description",
                 "subtasks",
+                "description",
             ]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(self.list_of_tasks)
-
+                
     @classmethod
     def load_tasks_from_csv(cls, filename):
         """Load tasks from a CSV file
@@ -75,9 +77,19 @@ class Note:
                 for task in tasks:
                     if "deadline" in task:
                         task["deadline"] = date_parser.isoparse(task["deadline"])
-                return tasks
+                    if "subtasks" in task:
+                        subtasks_str = task["subtasks"]
+                        if subtasks_str:
+                            task["subtasks"] = ast.literal_eval(subtasks_str)
+                        else:
+                            task["subtasks"] = []
+                            
+                # TODO: BUG FIX
+
+            return tasks
         except FileNotFoundError:
             return []
+
 
     def display_list(self):
         """
@@ -124,28 +136,10 @@ class Note:
                 print(task_string)
 
             if "subtasks" in task_info:
-                subtask_list = []
-                for subtask in task_info["subtasks"]:
-                    if isinstance(subtask, dict):
-                        subtask_task = subtask.get("task")
-                        if subtask_task is not None:
-                            subtask_list.append(subtask_task)
-                    elif isinstance(subtask, str):
-                        subtask_list.append(subtask)
-
-                if subtask_list:
-                    subtask_string = "".join(subtask_list)
-                    # Remove brackets and quotes
-                    subtask_string = (
-                        subtask_string.replace("[", "")
-                        .replace("]", "")
-                        .replace("'", "")
-                        .replace("{", "")
-                        .replace("}", "")
-                        .replace("task", "")
-                        .replace("  ", " ")
-                    )
-                    print(f"  - Subtasks{subtask_string}")
+                subtask_list = task_info["subtasks"]
+                
+                for subtask in subtask_list:
+                    print(f"    - {subtask}")
 
         print("---------------------------")
 
@@ -156,24 +150,13 @@ class Note:
         Returns:
             None
         """
+
         number_of_task = input("Enter a number of task: ")
         
-        if isinstance(number_of_task, str) and number_of_task.casefold() == "cancel":
+        if cancel_function(number_of_task) == 1:
             return None
-
-        try:
+        else:
             number_of_task = int(number_of_task) - 1
-
-            if number_of_task < 0 or number_of_task >= len(self.list_of_tasks):
-                print("Task not found")
-                return None
-
-        except ValueError:
-            print("\nEnter a valid task!\n")
-            return None
-        except TypeError:
-            print("\nEnter a valid task!\n")
-            return None
 
         print("What status to change to?\n")
         print("1 = Done")
@@ -205,6 +188,7 @@ class Note:
                 self.list_of_tasks[number_of_task]["status"] = "Undone"
             case _:
                 print("Incorrect status! Enter 1 or 2")
+        
 
     def append_task(self):
         """
@@ -216,7 +200,7 @@ class Note:
         """
         task_append_name = input("Enter name of a task\n >> ")
 
-        if isinstance(task_append_name, str) and task_append_name.casefold() == "cancel":
+        if cancel_function(task_append_name) == 1:
             return None
 
         if len(task_append_name) == 0 or len(task_append_name) > 70:
@@ -227,7 +211,7 @@ class Note:
             "Enter task deadline (e.g., '14 October' or '15:00' or 'October 15')\n >> "
         )
         
-        if isinstance(task_deadline, str) and task_deadline.casefold() == "cancel":
+        if cancel_function(task_deadline) == 1:
             return None
 
         # Check if the user has provided a specific time (e.g., '15:00') in the input
@@ -258,7 +242,7 @@ class Note:
 
         task_delete_index = input("Enter number of task to delete\n >> ")
 
-        if isinstance(task_delete_index, str) and task_delete_index.casefold() == "cancel":
+        if cancel_function(task_delete_index) == 1:
             return None
 
         try:
@@ -340,33 +324,29 @@ class Note:
         Returns:
             None
         """
+        
         task_index = input(
             "Enter the number of the task for which you want to add a subtask\n >> "
         )
         
-        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+        if cancel_function(task_index) == 1:
             return None
+        else:
+            task_index = int(task_index) - 1
         
-        try:
-            task_index = int(task_index)
-        except ValueError:
-            print("Invalid input. Please enter a valid task number.")
-        
-        if task_index < 1 or task_index > len(self.list_of_tasks):
+        if task_index < 0 or task_index >= len(self.list_of_tasks):
             print("Invalid task number. Task not found.")
             return None
 
         subtask_name = input("Enter a name for subtask\n >> ")
+        
         if subtask_name is not None:
-            # Check if the task already has subtasks, and if not, create an empty list
-            if "subtasks" not in self.list_of_tasks[task_index - 1]:
-                self.list_of_tasks[task_index - 1]["subtasks"] = []
-            # Append the subtask to the list of subtasks within the parent task
-            self.list_of_tasks[task_index - 1]["subtasks"].append(
-                {"task": subtask_name}
-            )
 
-            print(f"Succesfully created subtask '{subtask_name}'")
+            if isinstance(self.list_of_tasks[task_index]["subtasks"], str):
+                self.list_of_tasks[task_index]["subtasks"] = list(self.list_of_tasks[task_index]["subtasks"])
+
+            self.list_of_tasks[task_index]["subtasks"].append(subtask_name)
+            self.list_of_tasks[task_index]["subtasks"] == str(self.list_of_tasks[task_index]["subtasks"])
 
     def change_priority(self):
         """
@@ -377,12 +357,7 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        try:
-            task_index = int(task_index)
-        except ValueError:
-            print("Invalid input. Please enter a valid task number.")
-            
-        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+        if cancel_function(task_index) == 1:
             return None
 
         # Current task saved in variable
@@ -437,20 +412,18 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        try:
-            task_index = int(task_index)
-        except ValueError:
-            print("Invalid input. Please enter a valid task number.")
-            
-        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+        
+        if cancel_function(task_index) == 1:
             return None
 
         task_description = input("Enter task description\n >> ")
         
-        if task_description.casefold() is None or task_description.casefold() == "cancel":
+        if cancel_function(task_description) == 1:
             return None
+        else:
+            task_index = int(task_index) - 1
         
-        self.list_of_tasks[task_index - 1]["description"] = task_description
+        self.list_of_tasks[task_index]["description"] = task_description
 
     def read_description(self):
         """
@@ -461,15 +434,12 @@ class Note:
         """
         task_index = input("Enter task index\n >> ")
         
-        try:
-            task_index = int(task_index)
-        except ValueError:
-            print("Invalid input. Please enter a valid task number.")
-            
-        if isinstance(task_index, str) and task_index.casefold() == "cancel":
+        if cancel_function(task_index) == 1:
             return None
+        else:
+            task_index = int(task_index) - 1
 
-        print(f"\nDescription: {self.list_of_tasks[task_index - 1]['description']}\n")
+        print(f"\nDescription: {self.list_of_tasks[task_index]['description']}\n")
 
     def statistics_about_tasks(self):
         # TODO: Tasks/week, Tasks/month, Most active days
