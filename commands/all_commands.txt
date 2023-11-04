@@ -1,0 +1,219 @@
+add
+add task
+addtask
+task add
+taskadd
+new task
+new
+newtask
+createtask
+create task
+make task
+maketask
+create new task
+make new task
+do task
+make todo
+create todo
+add todo
+addtodo
+delete task
+deletetask
+delete
+del
+remove
+remove task
+removetask
+delete todo
+deletetodo
+removetodo
+remove todo
+erase task
+eliminate task
+clear task
+purge task
+dispose of task
+wipe task
+expunge task
+scrub task
+abolish task
+terminate task
+erase todo
+eliminate todo
+clear todo
+purge todo
+dispose of todo
+wipe todo
+expunge todo
+scrub todo
+abolish todo
+terminate todo
+add description
+make description
+change description
+add description
+make description
+change description
+edit details
+update notes
+modify text
+alter info
+attach notes
+include details
+create memo
+revise content
+adjust info
+append notes
+supplement text
+write notes
+insert information
+adjust particulars
+attach notes
+input details
+amend text
+customize description
+add remarks
+write comments
+edit specifics
+include explanations
+append insights
+write down notes
+modify particulars
+enhance notes
+supplement descriptions
+tasks
+task list
+my tasks
+things to do
+to-dos
+action items
+upcoming tasks
+view tasks
+menu
+notes
+todo
+to do
+show list
+list
+change priority
+priority
+marktask
+mark task
+mark todo
+change color
+changecolor
+color
+color task
+adjust priority
+set priority
+update priority
+modify priority
+prioritize
+flag task
+tag task
+label task
+alter color
+adjust color
+set color
+update color
+modify color
+colorize task
+color-code task
+change priority
+priority
+marktask
+mark task
+mark todo
+change color
+changecolor
+color
+color task
+adjust priority
+set priority
+update priority
+modify priority
+prioritize
+flag task
+tag task
+label task
+alter color
+adjust color
+set color
+update color
+modify color
+colorize task
+color-code task
+read description
+view details
+check notes
+examine content
+review specifics
+access information
+peruse text
+inspect explanations
+browse remarks
+study particulars
+go through insights
+look at comments
+scan explanations
+go over notes
+analyze details
+explore content
+scrutinize particulars
+skim remarks
+survey explanations
+read through notes
+digest details
+assess information
+understand remarks
+absorb insights
+take in explanations
+statistics
+infotasks
+productivity
+stats
+data analysis
+metrics
+trends
+data insights
+data work
+info duties
+knowledge jobs
+data assignments
+task performance
+effectiveness
+task completion
+task achievements
+data analysis
+statistical insights
+numerical metrics
+changestatus
+change status
+status
+undone
+done
+makedone
+makeundone
+changedone
+changeundone
+change done
+change undone
+create subtask
+make subtask
+makesubtask
+createsubtask
+makesub
+createsub
+generate subtask
+establish subtask
+form subtask
+build subtask
+set up subtask
+craft subtask
+develop subtask
+construct subtask
+produce subtask
+initiate subtask
+subtask
+subtodo
+sub
