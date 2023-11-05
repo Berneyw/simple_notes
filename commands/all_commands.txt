@@ -57,7 +57,6 @@ change description
 edit details
 update notes
 modify text
-alter info
 attach notes
 include details
 create memo
@@ -75,12 +74,6 @@ customize description
 add remarks
 write comments
 edit specifics
-include explanations
-append insights
-write down notes
-modify particulars
-enhance notes
-supplement descriptions
 tasks
 task list
 my tasks
@@ -155,7 +148,6 @@ browse remarks
 study particulars
 go through insights
 look at comments
-scan explanations
 go over notes
 analyze details
 explore content
@@ -166,7 +158,6 @@ read through notes
 digest details
 assess information
 understand remarks
-absorb insights
 take in explanations
 statistics
 infotasks
@@ -178,7 +169,6 @@ trends
 data insights
 data work
 info duties
-knowledge jobs
 data assignments
 task performance
 effectiveness
