@@ -3,6 +3,7 @@ import threading
 import notifications
 import csv
 import ast
+import smart_helper
 from os import path
 from dateutil import parser as date_parser
 from time import sleep
@@ -21,12 +22,14 @@ from colorama import Fore
 
 # TODO: Better cancel input handling
 
+
 def cancel_function(user_input):
     try:
         user_input = int(user_input) - 1
     except ValueError:
         if isinstance(user_input, str) and user_input.casefold() == "cancel":
             return 1
+
 
 class Note:
     _instance = None
@@ -59,7 +62,7 @@ class Note:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(self.list_of_tasks)
-                
+
     @classmethod
     def load_tasks_from_csv(cls, filename):
         """Load tasks from a CSV file
@@ -83,13 +86,12 @@ class Note:
                             task["subtasks"] = ast.literal_eval(subtasks_str)
                         else:
                             task["subtasks"] = []
-                            
+
                 # TODO: BUG FIX
 
             return tasks
         except FileNotFoundError:
             return []
-
 
     def display_list(self):
         """
@@ -137,7 +139,7 @@ class Note:
 
             if "subtasks" in task_info:
                 subtask_list = task_info["subtasks"]
-                
+
                 for subtask in subtask_list:
                     print(f"    - {subtask}")
 
@@ -152,7 +154,7 @@ class Note:
         """
 
         number_of_task = input("Enter a number of task: ")
-        
+
         if cancel_function(number_of_task) == 1:
             return None
         else:
@@ -188,7 +190,6 @@ class Note:
                 self.list_of_tasks[number_of_task]["status"] = "Undone"
             case _:
                 print("Incorrect status! Enter 1 or 2")
-        
 
     def append_task(self):
         """
@@ -210,7 +211,7 @@ class Note:
         task_deadline = input(
             "Enter task deadline (e.g., '14 October' or '15:00' or 'October 15')\n >> "
         )
-        
+
         if cancel_function(task_deadline) == 1:
             return None
 
@@ -324,32 +325,32 @@ class Note:
         Returns:
             None
         """
-        
+
         task_index = input(
             "Enter the number of the task for which you want to add a subtask\n >> "
         )
-        
+
         if cancel_function(task_index) == 1:
             return None
         else:
             task_index = int(task_index) - 1
-        
+
         if task_index < 0 or task_index >= len(self.list_of_tasks):
             print("Invalid task number. Task not found.")
             return None
 
         subtask_name = input("Enter a name for subtask\n >> ")
-        
-        if subtask_name is not None:
 
+        if subtask_name is not None:
             if "subtasks" not in self.list_of_tasks[task_index]:
                 self.list_of_tasks[task_index]["subtasks"] = []
 
             if isinstance(self.list_of_tasks[task_index]["subtasks"], str):
-                self.list_of_tasks[task_index]["subtasks"] = list(self.list_of_tasks[task_index]["subtasks"])
+                self.list_of_tasks[task_index]["subtasks"] = list(
+                    self.list_of_tasks[task_index]["subtasks"]
+                )
 
             self.list_of_tasks[task_index]["subtasks"].append(subtask_name)
-
 
     def change_priority(self):
         """
@@ -415,17 +416,17 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        
+
         if cancel_function(task_index) == 1:
             return None
 
         task_description = input("Enter task description\n >> ")
-        
+
         if cancel_function(task_description) == 1:
             return None
         else:
             task_index = int(task_index) - 1
-        
+
         self.list_of_tasks[task_index]["description"] = task_description
 
     def read_description(self):
@@ -436,7 +437,7 @@ class Note:
             None
         """
         task_index = input("Enter task index\n >> ")
-        
+
         if cancel_function(task_index) == 1:
             return None
         else:
@@ -508,6 +509,34 @@ read_description_file = path.join(base_dir, commands_dir, "read_description.txt"
 statistics_file = path.join(base_dir, commands_dir, "statistics.txt")
 
 
+def incorrect_command(user_input):
+    """
+    Takes a user input and checks if it is a valid command. If the input is not a valid command,
+    it prints an error message and a help message. If the input is a valid command,
+    it does nothing.
+
+    Args:
+        user_input: A string representing the user's input.
+    Returns:
+        None
+    """
+
+    most_similar_command = smart_helper.SmartHelper.find_similar_command(
+        smart_helper.SmartHelper, user_input
+    )
+    if most_similar_command is None:
+        print(
+            "Incorrect command!\n"
+            "Enter 'help' for list of available commands, or 'q' to quit"
+        )
+    else:
+        most_similar_command = most_similar_command[:-1]
+        print(
+            f"Incorrect command, maybe you meant '{most_similar_command}'?"
+            "\nOr enter 'help' for list of available commands"
+        )
+
+
 def main():
     tasks = Note.load_tasks_from_csv("tasks.csv")
     note.list_of_tasks = tasks
@@ -519,9 +548,13 @@ def main():
 
     while True:
         command = input(
-            "Enter what you want to do ('help' for all commands or 'q' to quit)\n >> "
+            "Enter what you want to do ('help' for all commands or 'q' to quit) \n >> "
         )
         command = command.casefold()
+
+        if len(command.casefold()) < 2 and command.casefold() != "q":
+            incorrect_command(command)
+            continue
 
         # TODO: make more efficient way to parse commands, if possible
 
@@ -550,10 +583,8 @@ def main():
         elif command == "9" or check_command_in_file(command, statistics_file):
             note.statistics_about_tasks()
         else:
-            print(
-                'Incorrect command, enter "help" for a list of available commands\n'
-                'Or enter "q" to exit terminal'
-            )
+            incorrect_command(command)
+            continue
 
 
 def check_command_in_file(command, file_name):
