@@ -342,11 +342,14 @@ class Note:
         
         if subtask_name is not None:
 
+            if "subtasks" not in self.list_of_tasks[task_index]:
+                self.list_of_tasks[task_index]["subtasks"] = []
+
             if isinstance(self.list_of_tasks[task_index]["subtasks"], str):
                 self.list_of_tasks[task_index]["subtasks"] = list(self.list_of_tasks[task_index]["subtasks"])
 
             self.list_of_tasks[task_index]["subtasks"].append(subtask_name)
-            self.list_of_tasks[task_index]["subtasks"] == str(self.list_of_tasks[task_index]["subtasks"])
+
 
     def change_priority(self):
         """
