@@ -1,8 +1,4 @@
-import note
 from os import path
-
-
-notes = note.Note()
 
 base_dir = path.dirname(path.abspath(__file__))
 commands_dir = path.join(base_dir, "..", "commands")
@@ -89,8 +85,6 @@ class SmartHelper:
 
         return list_of_similar_words[0]
 
-
-smart = SmartHelper()
-
+# debug
 # if __name__ == "__main__":
 #     note.main()

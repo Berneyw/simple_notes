@@ -471,6 +471,7 @@ class Note:
 
 
 note = Note()
+smart = smart_helper.SmartHelper()
 
 # note.list_of_tasks.append(
 #     {"task": "Test1", "status": "Undone", "deadline": "14 October"}
@@ -521,8 +522,8 @@ def incorrect_command(user_input):
         None
     """
 
-    most_similar_command = smart_helper.SmartHelper.find_similar_command(
-        smart_helper.SmartHelper, user_input
+    most_similar_command = smart.find_similar_command(
+        user_input
     )
     if most_similar_command is None:
         print(
