@@ -51,6 +51,7 @@ class Note:
         Parameters:
             filename (str): The name of the CSV file to save the tasks to.
         """
+
         with open(filename, "w", newline="") as file:
             fieldnames = [
                 "task",
@@ -73,6 +74,10 @@ class Note:
         Returns:
             list: list of tasks from CSV file
         """
+
+        global current_task_file
+        current_task_file = filename
+
         try:
             with open(filename, "r", newline="") as file:
                 reader = csv.DictReader(file)
@@ -86,12 +91,9 @@ class Note:
                             task["subtasks"] = ast.literal_eval(subtasks_str)
                         else:
                             task["subtasks"] = []
-
-                # TODO: BUG FIX
-
             return tasks
         except FileNotFoundError:
-            return []
+            return None
 
     def display_list(self):
         """
@@ -105,8 +107,9 @@ class Note:
         Return:
         - None
         """
-        print("SimpleNotes")
-        print("---------------------------")
+        global current_task_file
+        print(f"\n{Fore.RED} SimpleNotes {Fore.RESET}")
+        print(f"---------------------{current_task_file}-----")
 
         for index, task_info in enumerate(self.list_of_tasks, start=1):
             task, status, deadline, description = (
@@ -143,7 +146,7 @@ class Note:
                 for subtask in subtask_list:
                     print(f"    - {subtask}")
 
-        print("---------------------------")
+        print("------------------------------------")
 
     def change_status(self):
         """
@@ -469,6 +472,50 @@ class Note:
         for tasks in done_tasks_names:
             print(f"- {tasks}")
 
+    def change_task_file(self):
+        global current_task_file
+
+        def create_new_task_file():
+            new_task_file_name = input("Enter name for new task file\n >> ")
+            file_path = "task_saves/" + new_task_file_name + ".csv"
+            with open(file_path, "w+", newline="") as file:
+                fieldnames = [
+                    "task",
+                    "status",
+                    "deadline",
+                    "subtasks",
+                    "description",
+                ]
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.list_of_tasks)
+
+            print(f"Task file '{new_task_file_name}' created successfully!")
+            self.list_of_tasks = self.load_tasks_from_csv(file_path)
+            return self.list_of_tasks
+
+        save_current_file_decision = input(
+            "Do you want to save the current task file? (Y/N)\n >> "
+        )
+        if save_current_file_decision.lower() == "y":
+            self.save_tasks_to_csv(current_task_file)
+
+        new_task_file_name = input("Enter the name of the new task file\n >> ")
+        new_task_file_path = "task_saves/" + new_task_file_name + ".csv"
+        loaded_file = self.load_tasks_from_csv(new_task_file_path)
+
+        if loaded_file is None:
+            create_task_file_decision = input(
+                "Task file not found!\n" "Do you want to create a new one? (Y/N)\n >> "
+            )
+            if create_task_file_decision.lower() == "y":
+                self.save_tasks_to_csv(current_task_file)
+                self.list_of_tasks = []
+                self.list_of_tasks = create_new_task_file()
+            elif create_task_file_decision.lower() == "n":
+                return None
+
+
 
 note = Note()
 smart = smart_helper.SmartHelper()
@@ -493,6 +540,11 @@ help_message = [
     "7: add description",
     "8: read description",
     "9: statistics about tasks",
+    "10: next page",
+]
+
+help_message_page_2 = [
+    "11: change task file",
 ]
 
 # path from OS module
@@ -522,9 +574,7 @@ def incorrect_command(user_input):
         None
     """
 
-    most_similar_command = smart.find_similar_command(
-        user_input
-    )
+    most_similar_command = smart.find_similar_command(user_input)
     if most_similar_command is None:
         print(
             "Incorrect command!\n"
@@ -533,13 +583,14 @@ def incorrect_command(user_input):
     else:
         most_similar_command = most_similar_command[:-1]
         print(
-            f"Incorrect command, maybe you meant '{most_similar_command}'?"
+            f"Incorrect command, maybe you meant '{Fore.RED}{most_similar_command}{Fore.RESET}'?"
             "\nOr enter 'help' for list of available commands"
         )
 
 
 def main():
-    tasks = Note.load_tasks_from_csv("tasks.csv")
+    global current_task_file
+    tasks = Note.load_tasks_from_csv("task_saves/tasks.csv")
     note.list_of_tasks = tasks
 
     # Start thread to check if task deadline passed with "check_deadlines" function
@@ -563,7 +614,9 @@ def main():
             for i in help_message:
                 print(i)
         elif command == "q":
-            note.save_tasks_to_csv("tasks.csv")
+            # BUGFIX: TASKS SAVED ONLY TO TASKS.CSV, DO SAVES FOR OTHER FILE!!
+            # TODO: BUG
+            note.save_tasks_to_csv(current_task_file)
             break
         elif command == "1" or check_command_in_file(command, list_file):
             note.display_list()
@@ -583,6 +636,13 @@ def main():
             note.read_description()
         elif command == "9" or check_command_in_file(command, statistics_file):
             note.statistics_about_tasks()
+        elif command == "10":
+            print("Page 2")
+            for i in help_message_page_2:
+                print(i)
+            print("\n")
+        elif command == "11":
+            note.change_task_file()
         else:
             incorrect_command(command)
             continue
