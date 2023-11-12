@@ -4,7 +4,7 @@ import notifications
 import csv
 import ast
 import smart_helper
-from os import path
+from os import path, getcwd
 from dateutil import parser as date_parser
 from time import sleep
 from colorama import Fore
@@ -108,6 +108,8 @@ class Note:
         - None
         """
         global current_task_file
+        current_task_file = current_task_file.replace("simple_notes/task_saves/", "")
+        current_task_file = current_task_file.replace("task_saves/", "")
         print(f"\n{Fore.RED} SimpleNotes {Fore.RESET}")
         print(f"---------------------{current_task_file}-----")
 
@@ -146,7 +148,7 @@ class Note:
                 for subtask in subtask_list:
                     print(f"    - {subtask}")
 
-        print("------------------------------------")
+        print("-----------------------------------")
 
     def change_status(self):
         """
@@ -473,11 +475,17 @@ class Note:
             print(f"- {tasks}")
 
     def change_task_file(self):
-        global current_task_file
-
         def create_new_task_file():
             new_task_file_name = input("Enter name for new task file\n >> ")
-            file_path = "task_saves/" + new_task_file_name + ".csv"
+            current_directory = getcwd()
+            file_path = path.abspath(
+                path.join(
+                    current_directory,
+                    "task_saves",
+                    new_task_file_name + ".csv",
+                )
+            )
+
             with open(file_path, "w+", newline="") as file:
                 fieldnames = [
                     "task",
@@ -488,33 +496,42 @@ class Note:
                 ]
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerows(self.list_of_tasks)
 
-            print(f"Task file '{new_task_file_name}' created successfully!")
-            self.list_of_tasks = self.load_tasks_from_csv(file_path)
+            self.list_of_tasks = []
+
             return self.list_of_tasks
 
         save_current_file_decision = input(
             "Do you want to save the current task file? (Y/N)\n >> "
         )
+
         if save_current_file_decision.lower() == "y":
             self.save_tasks_to_csv(current_task_file)
 
         new_task_file_name = input("Enter the name of the new task file\n >> ")
-        new_task_file_path = "task_saves/" + new_task_file_name + ".csv"
+        new_task_file_path = path.abspath(
+            path.join(
+                path.dirname(path.dirname(current_task_file)),
+                "task_saves",
+                new_task_file_name + ".csv",
+            )
+        )
         loaded_file = self.load_tasks_from_csv(new_task_file_path)
 
         if loaded_file is None:
             create_task_file_decision = input(
                 "Task file not found!\n" "Do you want to create a new one? (Y/N)\n >> "
             )
+
             if create_task_file_decision.lower() == "y":
                 self.save_tasks_to_csv(current_task_file)
-                self.list_of_tasks = []
-                self.list_of_tasks = create_new_task_file()
+                create_new_task_file()
+
             elif create_task_file_decision.lower() == "n":
                 return None
 
+        else:
+            self.list_of_tasks = loaded_file
 
 
 note = Note()
@@ -614,8 +631,6 @@ def main():
             for i in help_message:
                 print(i)
         elif command == "q":
-            # BUGFIX: TASKS SAVED ONLY TO TASKS.CSV, DO SAVES FOR OTHER FILE!!
-            # TODO: BUG
             note.save_tasks_to_csv(current_task_file)
             break
         elif command == "1" or check_command_in_file(command, list_file):
