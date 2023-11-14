@@ -615,6 +615,8 @@ def main():
     deadline_thread.daemon = True
     deadline_thread.start()
 
+    smart.tab_autocompletion()
+
     while True:
         command = input(
             "Enter what you want to do ('help' for all commands or 'q' to quit) \n >> "
