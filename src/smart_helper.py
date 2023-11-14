@@ -1,4 +1,5 @@
 from os import path
+import readline
 
 base_dir = path.dirname(path.abspath(__file__))
 commands_dir = path.join(base_dir, "..", "commands")
@@ -70,7 +71,7 @@ class SmartHelper:
             list_of_weights.append(weight)
 
         maximum = max(list_of_weights)
-        
+
         if max(list_of_weights) < 2:
             return None
         # Get indeces of max values in list of weights
@@ -85,6 +86,25 @@ class SmartHelper:
 
         return list_of_similar_words[0]
 
+    def tab_autocompletion(self):
+        def completer(
+            text, state, arr=SmartHelper.open_txt("commands/all_commands.txt")
+        ):
+            options = (
+                [word.strip() for word in arr if word.startswith(text)] if text else []
+            )
+
+            if state < len(options):
+                return options[state] if state < 10 else None
+            else:
+                return None
+
+        readline.set_completer(completer)
+        readline.parse_and_bind("tab: complete")
+
+
 # debug
 # if __name__ == "__main__":
-#     note.main()
+#     helper = SmartHelper()
+#     helper.tab_autocompletion()
+#     user_input = input("Enter a word: ")
