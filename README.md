@@ -1,6 +1,9 @@
 ---
 📝 Simple Notes - Your Command Line To-Do List Organizer 🚀
 
+![](https://github.com/Berneyw/simple_notes/blob/main/images/simplenotes.png)
+
+
 Simple Notes is a sleek and efficient Python-based CLI (Command Line Interface) application designed to simplify task management. With just a few keystrokes, you can effortlessly organize your daily activities, prioritize tasks, and stay focused on what matters most.
 
 🔥 Key Features:
