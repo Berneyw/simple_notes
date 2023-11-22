@@ -4,6 +4,7 @@ import notifications
 import csv
 import ast
 import smart_helper
+import task_history
 from os import path, getcwd
 from dateutil import parser as date_parser
 from time import sleep
@@ -185,6 +186,9 @@ class Note:
                     "certainly",
                     "ye",
                 ]:
+                    task_history.append_task_to_history(
+                        self.list_of_tasks[number_of_task]
+                    )
                     self.list_of_tasks.pop(number_of_task)
                     print(
                         "\nSuccessfully deleted task"
@@ -261,6 +265,7 @@ class Note:
             # Subtract 1 from task_delete_index to match the list indexing (starting from 0)
             deleted_task = self.list_of_tasks.pop(task_delete_index - 1)
             print(f"\nSuccessfully deleted task: {deleted_task['task']}\n")
+            task_history.append_task_to_history(deleted_task)
 
         except ValueError:
             print("Invalid input. Please enter a valid task number.")
@@ -562,6 +567,7 @@ help_message = [
 
 help_message_page_2 = [
     "11: change task file",
+    "12: show task history",
 ]
 
 # path from OS module
@@ -577,6 +583,7 @@ priority_file = path.join(base_dir, commands_dir, "priority.txt")
 description_file = path.join(base_dir, commands_dir, "description.txt")
 read_description_file = path.join(base_dir, commands_dir, "read_description.txt")
 statistics_file = path.join(base_dir, commands_dir, "statistics.txt")
+history_of_tasks_file = path.join(base_dir, commands_dir, "history.txt")
 
 
 def incorrect_command(user_input):
@@ -633,7 +640,11 @@ def main():
             for i in help_message:
                 print(i)
         elif command == "q":
-            note.save_tasks_to_csv(current_task_file)
+            task_history.save_task_to_history()
+            try:
+                note.save_tasks_to_csv("task_saves/" + current_task_file)
+            except FileNotFoundError:
+                note.save_tasks_to_csv(current_task_file)
             break
         elif command == "1" or check_command_in_file(command, list_file):
             note.display_list()
@@ -660,6 +671,9 @@ def main():
             print("\n")
         elif command == "11":
             note.change_task_file()
+        elif command == "12" or check_command_in_file(command, history_of_tasks_file):
+            task_history.load_history_from_csv()
+            task_history.show_task_history()
         else:
             incorrect_command(command)
             continue
